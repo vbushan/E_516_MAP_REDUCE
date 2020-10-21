@@ -2,12 +2,16 @@ import googleapiclient.discovery
 import configparser
 import time
 
-config=configparser.ConfigParser()
+config = configparser.ConfigParser()
 config.read('config.ini')
 
 project = config['MAP_REDUCE']['PROJECT_ID']
 zone = config['MAP_REDUCE']['ZONE']
-image=config['TEMPLATE']['IMAGE']
+image=config['TEMPLATE']['IMAGE_NAME']
+
+
+
+
 
 compute=googleapiclient.discovery.build('compute', 'v1')
 
