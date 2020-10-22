@@ -27,22 +27,36 @@ class Master(rpyc.Service):
         print('Client disconnected on',time)
 
     def exposed_init_cluster(self):
+        mappers=[]
+        reducers=[]
         with concurrent.futures.ProcessPoolExecutor() as executor:
             mapper_names = [config['MAPPER']['NAME'] +
                             str(i) for i in range(1, self.num_mappers+1)]
 
-            mappers = executor.map(self.spawn_worker, mapper_names)
+            #mappers = executor.map(self.spawn_worker, mapper_names)
+
+            for name,IP in zip(mapper_names,executor.map(self.spawn_worker, mapper_names)):
+                mappers.append(mappers(name,IP))
 
             reducer_names = [config['REDUCER']['NAME'] +
                              str(i) for i in range(1, self.num_reducers+1)]
 
-            reducers = executor.map(self.spawn_worker, reducer_names)
+            #reducers = executor.map(self.spawn_worker, reducer_names)
 
-        print('Number of mappers created',len(mappers))
-        print('Number of reducers created',len(reducers))
+            for name,IP in zip(reducer_names,executor.map(self.spawn_worker,reducer_names)):
+                reducers.append((name,IP))
+
+        #print('Number of mappers created',len(mappers))
+        #print('Number of reducers created',len(reducers))
+        self.mappers=mappers
+        self.reducers=reducers
+
+        return (self.mappers,self.reducers)
+
 
     def exposed_destroy_cluster(self):
-        pass
+        return (self.mappers,self.reducers)
+
 
     def exposed_run_map_reduce(self,in_loc,map_func,red_func,out_loc):
         pass
@@ -50,7 +64,7 @@ class Master(rpyc.Service):
     def spawn_worker(self,worker_name):
         try:
 
-            return (worker_name,start_worker_instance(worker_name))
+            return start_worker_instance(worker_name)
         except Exception as e:
             traceback.print_exc()
 
