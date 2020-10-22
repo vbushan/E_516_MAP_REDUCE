@@ -69,6 +69,8 @@ class Master(rpyc.Service):
         try:
             mapper_ips=[ip for _,ip in self.mappers ]
             reducer_ips=[ip for _,ip in self.reducers ]
+
+            logging.info(f'Worker IPs- {(mapper_ips,reducer_ips)}')
             
             logging.info('Starting mapper tasks')
             #with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -106,6 +108,9 @@ class Master(rpyc.Service):
             logging.error('Error in map reduce task- \n'+str(e))
             return 0
 
+
+
+
     def run_mapper(self,mapper_ip):
         try:
             #while True:
@@ -115,7 +120,9 @@ class Master(rpyc.Service):
             if worker.add(2,3)!=5:
                 raise Exception('Incorrect Result')
 
+            conn.close()
             return 1
+        
         
         except Exception as e:
             traceback.print_exc()
@@ -131,7 +138,8 @@ class Master(rpyc.Service):
 
             if worker.add(2, 3)!= 5:
                 raise Exception('Incorrect Result')
-
+            
+            conn.close()
             return 1
 
         except Exception as e:
