@@ -24,6 +24,6 @@ class Worker(rpyc.Service):
 
 
 if __name__ == "__main__":
-
-    t = ThreadedServer(Worker, hostname='0.0.0.0', port=8080)
+    rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
+    t = ThreadedServer(Worker, hostname='0.0.0.0', port=8080,protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
     t.start()

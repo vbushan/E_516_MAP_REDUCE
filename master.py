@@ -57,6 +57,7 @@ class Master(rpyc.Service):
 
 
 if __name__=="__main__":
+    rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
     t=ThreadedServer(Master,
-    hostname='0.0.0.0',port=8080)
+    hostname='0.0.0.0',port=8080,protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
     t.start()
