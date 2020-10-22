@@ -1,10 +1,19 @@
 import rpyc
 import traceback
+import cmp_eng
+import configparser
+
+config=configparser.ConfigParser()
+config.read('config.ini')
+
+
+MASTER_IP=config['MASTER']['NAME']
+PORT=int(config['MAP_REDUCE']['PORT'])
 
 
 try:
     rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
-    master_conn=rpyc.connect('35.231.241.236', 8080,config=rpyc.core.protocol.DEFAULT_CONFIG)
+    master_conn=rpyc.connect(MASTER_IP,PORT,config=rpyc.core.protocol.DEFAULT_CONFIG)
     master=master_conn.root
     result1=master.init_cluster()
     print(result1)

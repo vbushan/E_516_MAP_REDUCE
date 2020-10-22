@@ -36,7 +36,7 @@ class Master(rpyc.Service):
             #mappers = executor.map(self.spawn_worker, mapper_names)
 
             for name,IP in zip(mapper_names,executor.map(self.spawn_worker, mapper_names)):
-                mappers.append(mappers(name,IP))
+                mappers.append((name,IP))
 
             reducer_names = [config['REDUCER']['NAME'] +
                              str(i) for i in range(1, self.num_reducers+1)]
