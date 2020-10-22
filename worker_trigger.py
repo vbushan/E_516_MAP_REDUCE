@@ -26,8 +26,8 @@ def start_worker_instance(name):
 
         print('[Checkpoint] Worker Instance Created')
 
-        _,WORKER_IP=cmp_eng.get_ip(name)
-        return WORKER_IP
+        INT_IP,EXT_IP=cmp_eng.get_ip(name)
+        return INT_IP,EXT_IP
 
     except Exception as e:
         traceback.print_exc()

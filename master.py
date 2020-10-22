@@ -89,7 +89,7 @@ class Master(rpyc.Service):
     def run_mapper(self,mapper_ip):
         try:
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
-            conn=rpyc.connect(mapper_ip,config['MAP_REDUCE']['PORT'],config=rpyc.core.protocol.DEFAULT_CONFIG)
+            conn=rpyc.connect(mapper_ip[0],config['MAP_REDUCE']['PORT'],config=rpyc.core.protocol.DEFAULT_CONFIG)
             worker=conn.root
             if worker.add(2,3)!=5:
                 raise Exception('Incorrect Result')
@@ -103,10 +103,10 @@ class Master(rpyc.Service):
     def run_reducer(self,reducer_ip):
         try:
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
-            conn = rpyc.connect(reducer_ip, config['MAP_REDUCE']['PORT'], config=rpyc.core.protocol.DEFAULT_CONFIG)
+            conn = rpyc.connect(reducer_ip[0], config['MAP_REDUCE']['PORT'], config=rpyc.core.protocol.DEFAULT_CONFIG)
             worker = conn.root
 
-            if worker.add(2, 3) != 5:
+            if worker.add(2, 3)!= 5:
                 raise Exception('Incorrect Result')
 
             return 1
