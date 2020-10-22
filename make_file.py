@@ -29,7 +29,7 @@ try:
 
     print('[Checkpoint] Master Instance Created')
 
-    MASTER_IP = cmp_eng.get_ip(MASTER_NAME)
+    _,MASTER_IP = cmp_eng.get_ip(MASTER_NAME)
     MASTER_PORT = int(config['MAP_REDUCE']['PORT'])
 
     print('MASTER NODE ADDRESS', (MASTER_IP, MASTER_PORT))
@@ -42,7 +42,7 @@ try:
 
     print('[Checkpoint] KV Server Instance Created')
 
-    KV_SERVER_IP = cmp_eng.get_ip(KV_SERVER_NAME)
+    _,KV_SERVER_IP = cmp_eng.get_ip(KV_SERVER_NAME)
     KV_PORT = int(config['MAP_REDUCE']['PORT'])
 
     print('KV SERVER NODE ADDRESS', (KV_SERVER_IP, KV_PORT))
