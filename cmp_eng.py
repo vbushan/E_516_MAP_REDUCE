@@ -21,7 +21,7 @@ def list_instances():
 
 
 def create_instance(name,startup_script):
-    image_response = compute.images().get(project=project, image=image)
+    image_response = compute.images().get(project=project, image=image).execute()
 
     source_disk_image = image_response['selfLink']
 
