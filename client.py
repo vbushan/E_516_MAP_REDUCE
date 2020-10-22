@@ -15,13 +15,13 @@ try:
     rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
     master_conn=rpyc.connect(MASTER_IP,PORT,config=rpyc.core.protocol.DEFAULT_CONFIG)
     master=master_conn.root
+
     result1=master.init_cluster()
-    print('Worker',result1)
+    print('Workers',result1)
 
     result2=master.run_map_reduce()
     if not result2:
         raise Exception('Map reduce task incomplete')
-
 
     result3=master.destroy_cluster()
     if not result3:

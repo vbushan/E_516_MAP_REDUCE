@@ -100,10 +100,17 @@ def wait_for_operation(operation):
 
 def delete_instance(name):
 
-    return compute.instances().delete(
+    operation= compute.instances().delete(
         project=project,
         zone=zone,
         instance=name).execute()
+    
+    result=wait_for_operation(operation['name'])
+    while True:
+        if result['status'] == 'DONE':
+            print('Deleted instance',name)
+            break
+
 
 
 def get_ip(name):
