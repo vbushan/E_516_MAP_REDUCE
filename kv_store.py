@@ -16,14 +16,12 @@ class KV_SERVER(rpyc.Service):
         time = datetime.datetime.now()
         print('Client disconnected on', time)
 
-    def exposed_init_cluster(self):
+    def exposed_get(self):
         pass
 
-    def exposed_destroy_cluster(self):
+    def exposed_set(self):
         pass
 
-    def exposed_run_map_reduce(self):
-        pass
 
 
 if __name__ == "__main__":

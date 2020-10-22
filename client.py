@@ -7,7 +7,7 @@ config=configparser.ConfigParser()
 config.read('config.ini')
 
 
-MASTER_IP=config['MASTER']['NAME']
+_,MASTER_IP=cmp_eng.get_ip(config['MASTER']['NAME'])
 PORT=int(config['MAP_REDUCE']['PORT'])
 
 
@@ -16,9 +16,17 @@ try:
     master_conn=rpyc.connect(MASTER_IP,PORT,config=rpyc.core.protocol.DEFAULT_CONFIG)
     master=master_conn.root
     result1=master.init_cluster()
-    print(result1)
-    result2=master.destroy_cluster()
-    print(result2)
+    print('Worker',result1)
+
+    result2=master.run_map_reduce()
+    if not result2:
+        raise Exception('Map reduce task incomplete')
+
+
+    result3=master.destroy_cluster()
+    if not result3:
+        raise Exception('Destroy cluster task incomplete')
+
 
 except Exception as e:
     traceback.print_exc()
