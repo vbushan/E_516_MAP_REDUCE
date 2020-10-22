@@ -6,6 +6,9 @@ import concurrent.futures
 import traceback
 from worker_trigger import start_worker_instance
 import cmp_eng
+import logging
+
+logging.basicConfig(level=logging.DEBUG,filename='app.log',filemode='w')
 
 config=configparser.ConfigParser()
 config.read('config.ini')
@@ -66,24 +69,29 @@ class Master(rpyc.Service):
         try:
             mapper_ips=[ip for _,ip in self.mappers ]
             reducer_ips=[ip for _,ip in self.reducers ]
-
+            
+            logging.info('Starting mapper tasks')
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 mapper_responses=executor.map(self.run_mapper,mapper_ips)
 
+            logging.info('Completed mapper tasks')
             for response in mapper_responses:
                 if not response:
                     raise Exception("Mapper task incomplete")
-
+            
+            logging.info('Starting reducer tasks')
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 reducer_responses=executor.map(self.run_reducer,reducer_ips)
-
+            
+            logging.info('Completed reducer tasks')
             for response in reducer_responses:
                 if not response:
                     raise Exception("Reducer task incomplete")
-
+    
             return 1
         except Exception as e:
             traceback.print_exc()
+            logging.error('Error in map reduce task- \n'+str(e))
             return 0
 
     def run_mapper(self,mapper_ip):
@@ -98,6 +106,7 @@ class Master(rpyc.Service):
         
         except Exception as e:
             traceback.print_exc()
+            logging.error('Error in map reduce task- \n' + str(e))
             return 0
 
     def run_reducer(self,reducer_ip):
@@ -113,6 +122,7 @@ class Master(rpyc.Service):
 
         except Exception as e:
             traceback.print_exc()
+            logging.error('Error in map reduce task- \n' + str(e))
             return 0
 
     def spawn_worker(self,worker_name):
