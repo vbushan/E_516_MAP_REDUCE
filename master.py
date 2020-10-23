@@ -104,7 +104,9 @@ class Master(rpyc.Service):
 
 
 
-            map_add=[rpyc.async_(mapper.add)(2,3) for mapper in mappers]
+            #map_add=[rpyc.async_(mapper.add)(2,3) for mapper in mappers]
+
+            map_add=[rpyc.async_(mappers[i].execute)('MAPPER',self.map_func,mapper_input[i],i+1) for i in range(len(mappers))]
 
             for process in map_add:
                 while not process.ready:
@@ -115,7 +117,7 @@ class Master(rpyc.Service):
                 mapper_responses.append(process.value)
 
             for response in mapper_responses:
-                if response!=5:
+                if response[0]!=1:
                     raise Exception("Mapper task incomplete")
 
             logging.info('Completed mapper tasks')
@@ -123,7 +125,9 @@ class Master(rpyc.Service):
             logging.info('Starting reducer tasks')
 
 
-            red_add = [rpyc.async_(reducer.add)(2, 3) for reducer in reducers]
+            #red_add = [rpyc.async_(reducer.add)(2, 3) for reducer in reducers]
+
+            red_add=[rpyc.async_(reducers[i].execute)('REDUCER',self.red_func,None,i+1) for i in range(len(reducers))]
 
             for process in red_add:
                 while not process.ready:
@@ -135,7 +139,7 @@ class Master(rpyc.Service):
                 reducer_responses.append(process.value)
 
             for response in reducer_responses:
-                if response!=5:
+                if response[0]!=1:
                     raise Exception("Reducer task incomplete")
 
             logging.info('Completed reducer tasks')
