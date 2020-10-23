@@ -43,10 +43,12 @@ class Master(rpyc.Service):
 
             for name,IP in zip(reducer_names,executor.map(self.spawn_worker,reducer_names)):
                 reducers.append((name,IP))
+        
+
 
         self.mappers=mappers
         self.reducers=reducers
-
+    
         return (self.mappers,self.reducers)
 
 
@@ -67,19 +69,17 @@ class Master(rpyc.Service):
 
     def exposed_run_map_reduce(self):
         try:
+
             mapper_ips=[ip for _,ip in self.mappers ]
             reducer_ips=[ip for _,ip in self.reducers ]
 
             logging.info(f'Worker IPs- {(mapper_ips,reducer_ips)}')
             
             logging.info('Starting mapper tasks')
-            #with concurrent.futures.ProcessPoolExecutor() as executor:
-            #    mapper_responses=executor.map(self.run_mapper,mapper_ips)
 
             mapper_responses=[]
             for mapper in mapper_ips:
                 mapper_responses.append(self.run_mapper(mapper))
-
 
             for response in mapper_responses:
                 if not response:
@@ -88,9 +88,6 @@ class Master(rpyc.Service):
             logging.info('Completed mapper tasks')
 
             logging.info('Starting reducer tasks')
-
-            #with concurrent.futures.ProcessPoolExecutor() as executor:
-            #    reducer_responses=executor.map(self.run_reducer,reducer_ips)
 
             reducer_responses=[]
             for reducer in reducer_ips:
@@ -108,26 +105,25 @@ class Master(rpyc.Service):
             logging.error('Error in map reduce task- \n'+str(e))
             return 0
 
-
-
-
     def run_mapper(self,mapper_ip):
         try:
             #while True:
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             conn=rpyc.connect(mapper_ip[0],int(config['MAP_REDUCE']['PORT']),config=rpyc.core.protocol.DEFAULT_CONFIG)
             worker=conn.root
-            if worker.add(2,3)!=5:
+            result=worker.add(2,3)
+            logging.debug(f"{mapper_ip} result- {result}")
+
+            if result!=5:
                 raise Exception('Incorrect Result')
 
             conn.close()
             return 1
-        
-        
+
         except Exception as e:
             traceback.print_exc()
-            logging.error('Error in map reduce task- \n' + str(e))
-            return 0
+            logging.error('Error in map task- \n' + str(e))
+            raise Exception(str(e))
 
     def run_reducer(self,reducer_ip):
         try:
@@ -135,8 +131,10 @@ class Master(rpyc.Service):
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             conn = rpyc.connect(reducer_ip[0], int(config['MAP_REDUCE']['PORT']), config=rpyc.core.protocol.DEFAULT_CONFIG)
             worker = conn.root
+            result = worker.add(2, 3)
+            logging.debug(f"{reducer_ip} result- {result}")
 
-            if worker.add(2, 3)!= 5:
+            if result != 5:
                 raise Exception('Incorrect Result')
             
             conn.close()
@@ -144,8 +142,8 @@ class Master(rpyc.Service):
 
         except Exception as e:
             traceback.print_exc()
-            logging.error('Error in map reduce task- \n' + str(e))
-            return 0
+            logging.error('Error in reduce task- \n' + str(e))
+            raise Exception(str(e))
 
     def spawn_worker(self,worker_name):
         try:
@@ -153,7 +151,6 @@ class Master(rpyc.Service):
             return start_worker_instance(worker_name)
         except Exception as e:
             traceback.print_exc()
-
 
 
 if __name__=="__main__":

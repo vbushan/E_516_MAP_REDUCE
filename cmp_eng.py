@@ -1,6 +1,10 @@
 import googleapiclient.discovery
 import configparser
 import time
+#import logging
+
+#logging.basicConfig(level=logging.DEBUG,filename='worker-trigger.log',filemode='w')
+
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -8,10 +12,6 @@ config.read('config.ini')
 project = config['MAP_REDUCE']['PROJECT_ID']
 zone = config['MAP_REDUCE']['ZONE']
 image=config['TEMPLATE']['IMAGE_NAME']
-
-
-
-
 
 compute=googleapiclient.discovery.build('compute', 'v1')
 
@@ -79,10 +79,10 @@ def create_instance(name,startup_script):
         zone=zone,
         body=config).execute()
 
-
 def wait_for_operation(operation):
 
     print('Waiting for operation to finish...')
+
     while True:
         result = compute.zoneOperations().get(
             project=project,
@@ -97,7 +97,6 @@ def wait_for_operation(operation):
 
         time.sleep(1)
 
-
 def delete_instance(name):
 
     operation= compute.instances().delete(
@@ -110,8 +109,6 @@ def delete_instance(name):
         if result['status'] == 'DONE':
             print('Deleted instance',name)
             break
-
-
 
 def get_ip(name):
 

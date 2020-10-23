@@ -1,7 +1,9 @@
 import rpyc
 from rpyc.utils.server import ThreadedServer
 import datetime
-#from worker_functions import mapper_wc, mapper_inv_ind, reducer_wc, reducer_inv_ind
+import logging
+
+logging.basicConfig(level=logging.DEBUG,filename='worker.log',filemode='w')
 
 
 class Worker(rpyc.Service):
@@ -9,12 +11,13 @@ class Worker(rpyc.Service):
         pass
 
     def on_connect(self, conn):
+
         time=datetime.datetime.now()
-        print('Master connected on',time)
+        logging.info(f'Master connected on {time}')
 
     def on_disconnect(self, conn):
         time=datetime.datetime.now()
-        print('Master disconnected on', time)
+        logging.info(f'Master disconnected on {time}')
 
     def exposed_execute(self, role, func, data, index):
         pass

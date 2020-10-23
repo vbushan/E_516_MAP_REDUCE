@@ -3,6 +3,10 @@ import cmp_eng
 from pprint import pprint
 import traceback
 import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG,filename='worker-trigger.log',filemode='w')
+
 
 config=configparser.ConfigParser()
 config.read('config.ini')
@@ -19,15 +23,16 @@ def start_worker_instance(name):
 
         create_op = cmp_eng.create_instance(name, startup_script)
 
-        print('Creating Worker instance....')
+        logging.info('Creating Worker instance....')
 
         status = cmp_eng.wait_for_operation(create_op['name'])
         pprint(status)
 
-        print('[Checkpoint] Worker Instance Created')
+        logging.info('[Checkpoint] Worker Instance Created')
 
-        INT_IP,EXT_IP=cmp_eng.get_ip(name)
-        return INT_IP,EXT_IP
+        int_ip,ext_ip=cmp_eng.get_ip(name)
+
+        return int_ip,ext_ip
 
     except Exception as e:
         traceback.print_exc()

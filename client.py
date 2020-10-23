@@ -2,6 +2,8 @@ import rpyc
 import traceback
 import cmp_eng
 import configparser
+import time
+
 
 config=configparser.ConfigParser()
 config.read('config.ini')
@@ -18,6 +20,8 @@ try:
 
     result1=master.init_cluster()
     print('Workers',result1)
+    
+    time.sleep(10)
 
     result2=master.run_map_reduce()
     if not result2:
