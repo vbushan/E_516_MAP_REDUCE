@@ -56,12 +56,29 @@ class Master(rpyc.Service):
             reducer_names = [config['REDUCER']['NAME'] +
                          str(i) for i in range(1, self.num_reducers + 1)]
 
+            """
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 mapper_processes=[executor.submit(self.spawn_worker,mapper) for mapper in mapper_names]
                 reducer_processes=[executor.submit(self.spawn_worker,reducer) for reducer in reducer_names]
                 mappers=[process.result() for process in concurrent.futures.as_completed(mapper_processes)]
                 reducers=[process.result() for process in concurrent.futures.as_completed(reducer_processes)]
 
+            """
+
+            async_spawn=rpyc.async_(self.spawn_worker)
+            mapper_processes=[async_spawn(mapper) for mapper in mapper_names]
+            reducer_processes=[async_spawn(reducer) for reducer in reducer_names]
+
+            for mapper in mapper_processes:
+                while not mapper.ready:
+                    continue
+
+            for reducer in reducer_processes:
+                while not reducer.ready:
+                    continue
+
+            mappers=[process.value for process in mapper_processes]
+            reducers=[process.value for process in reducer_processes]
 
             self.mappers=mappers
             self.reducers=reducers
