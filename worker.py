@@ -65,19 +65,24 @@ class Worker(rpyc.Service):
             for _,file in data:
                 words=file.split(" ")
                 result+=list(map(lambda x: (x, 1), words))
-
+            logging.info(f'Mapper Result {result}')
+            
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
-
+            logging.info('Connected to KV Store')
+            
             def hash_func(item):
 
                 word=item[0]
                 return sum([ord(c) for c in word])%num_reducers
-
+            
+            logging.info('Sending result to KV')
             for hash_key,group in itertools.groupby(result,hash_func):
+                logging.info(f'{hash_key},{group}')
                 kv_server.set(hash_key,list(group))
-
+            
+            logging.info('Completed Task')
             return "Completed Task"
         except Exception as e:
             logging.error(e)
@@ -89,7 +94,9 @@ class Worker(rpyc.Service):
             for index,file in data:
                 words=file.split()
                 result+=list(map(lambda x: (x, index), words))
-
+            
+            logging.info(f'Mapper result {result}')
+            
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
@@ -98,8 +105,11 @@ class Worker(rpyc.Service):
 
                 word=item[0]
                 return sum([ord(c) for c in word])%num_reducers
-
+            
+            logging.info('Sending result to KV')
+            
             for hash_key,group in itertools.groupby(result,hash_func):
+                logging.info(f'{hash_key},{group}')
                 kv_server.set(hash_key,list(group))
 
             return "Completed Task"

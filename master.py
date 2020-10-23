@@ -25,11 +25,11 @@ class Master(rpyc.Service):
 
     def on_connect(self, conn):
         time=datetime.datetime.now()
-        print('Client connected on',time)
+        logging.info(f'Client connected on {time}')
 
     def on_disconnect(self, conn):
         time=datetime.datetime.now()
-        print('Client disconnected on',time)
+        logging.info(f'Client disconnected on {time}')
 
     def exposed_init_cluster(self):
         try:
@@ -54,7 +54,7 @@ class Master(rpyc.Service):
             return (self.mappers,self.reducers)
 
         except Exception as e:
-            logging.error(e)
+            logging.error(str(e))
             raise Exception(e)
 
     def exposed_destroy_cluster(self):
@@ -71,7 +71,9 @@ class Master(rpyc.Service):
             return 1
 
         except Exception as e:
-            traceback.print_exc()
+            
+            logging.error(str(e))
+            raise Exception(e)
             return 0
 
     def exposed_run_map_reduce(self,in_loc,map_func,red_func,out_loc):

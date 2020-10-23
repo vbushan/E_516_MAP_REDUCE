@@ -30,5 +30,6 @@ def start_worker_instance(name):
         return int_ip,ext_ip
 
     except Exception as e:
-        traceback.print_exc()
+        #traceback.print_exc()
+        logging.error(str(e))
         raise Exception(str(e))
