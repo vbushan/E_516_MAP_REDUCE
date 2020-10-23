@@ -53,18 +53,17 @@ class Master(rpyc.Service):
         try:
             mapper_names = [config['MAPPER']['NAME'] +
                             str(i) for i in range(1, self.num_mappers + 1)]
-            reducer_names = [config['REDUCER']['NAME'] +
-                         str(i) for i in range(1, self.num_reducers + 1)]
+            reducer_names = [config['REDUCER']['NAME'] + str(i) for i in range(1, self.num_reducers + 1)]
 
-            """
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 mapper_processes=[executor.submit(self.spawn_worker,mapper) for mapper in mapper_names]
                 reducer_processes=[executor.submit(self.spawn_worker,reducer) for reducer in reducer_names]
                 mappers=[process.result() for process in concurrent.futures.as_completed(mapper_processes)]
                 reducers=[process.result() for process in concurrent.futures.as_completed(reducer_processes)]
 
-            """
 
+
+            """
             async_spawn=rpyc.async_(self.spawn_worker)
             mapper_processes=[async_spawn(mapper) for mapper in mapper_names]
             reducer_processes=[async_spawn(reducer) for reducer in reducer_names]
@@ -79,6 +78,7 @@ class Master(rpyc.Service):
 
             mappers=[process.value for process in mapper_processes]
             reducers=[process.value for process in reducer_processes]
+            """
 
             self.mappers=mappers
             self.reducers=reducers
@@ -129,24 +129,52 @@ class Master(rpyc.Service):
 
             logging.info(f'Worker IPs- {(mapper_ips,reducer_ips)}')
 
+            mappers=self.run_mapper(mapper_ips)
+            reducers=self.run_reducer(reducer_ips)
+
             logging.info('Starting mapper tasks')
 
+            """
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 mapper_responses=executor.map(self.run_mapper,zip(mapper_ips,mapper_input,range(1,self.num_mappers+1)))
+            """
+
+            map_add=[rpyc.async_(mapper.add)(2,3) for mapper in mappers]
+
+            for process in map_add:
+                while not process.ready:
+                    continue
+
+            mapper_responses=[]
+            for process in map_add:
+                mapper_responses.append(process.value)
 
             for response in mapper_responses:
-                if not response:
+                if response!=5:
                     raise Exception("Mapper task incomplete")
 
             logging.info('Completed mapper tasks')
 
             logging.info('Starting reducer tasks')
 
+            """
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 reducer_responses=executor.map(self.run_reducer,zip(reducer_ips,range(1,self.num_reducers+1)))
+            
+            """
+            red_add = [rpyc.async_(reducer.add)(2, 3) for reducer in reducers]
+
+            for process in red_add:
+                while not process.ready:
+                    continue
+
+            reducer_responses = []
+
+            for process in red_add:
+                reducer_responses.append(process.value)
 
             for response in reducer_responses:
-                if not response:
+                if response!=5:
                     raise Exception("Reducer task incomplete")
 
             logging.info('Completed reducer tasks')
@@ -157,9 +185,9 @@ class Master(rpyc.Service):
             logging.error('Error in map reduce task- \n'+str(e))
             return 0
 
-    def run_mapper(self,mapper_inp):
+    def run_mapper(self,mapper_ips):
         try:
-
+            """
             mapper_ip=mapper_inp[0]
             inp_data=mapper_inp[1]
             mapper_index=mapper_inp[2]
@@ -177,6 +205,7 @@ class Master(rpyc.Service):
                 raise Exception('Incorrect Result')
 
             """
+            """
             logging.info(f'Mapper {mapper_ip} performing task 2')
 
 
@@ -187,19 +216,28 @@ class Master(rpyc.Service):
             if result!=1:
                 raise Exception(f'Something went wrong in mapper- {mapper_ip}')
             """
+            """
 
             conn.close()
+            """
 
-            return 1
+            rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
+            mappers=[]
+            for ip in mapper_ips:
+                conn = rpyc.connect(ip[0], int(config['MAP_REDUCE']['PORT']), config=rpyc.core.protocol.DEFAULT_CONFIG)
+
+                mappers.append(conn.root)
+
+            return mappers
 
         except Exception as e:
             traceback.print_exc()
             logging.error('Error in map task- \n' + str(e))
             raise Exception(str(e))
 
-    def run_reducer(self,reducer_inp):
+    def run_reducer(self,reducer_ips):
         try:
-
+            """
             reducer_ip=reducer_inp[0]
             reducer_index=reducer_inp[1]
 
@@ -214,7 +252,7 @@ class Master(rpyc.Service):
             if result != 5:
                 raise Exception('Incorrect Result')
 
-            """
+            
             logging.debug(f"Reducer {reducer_ip} performing task 2")
             status,result=worker.execute('REDUCER',self.red_func,None,reducer_index)
             logging.debug(f"{reducer_ip} task 1 result- {status}")
@@ -226,9 +264,18 @@ class Master(rpyc.Service):
             else:
                 raise Exception('Something went wrong in the reducer')
             
-            """
+            
             conn.close()
-            return 1
+            """
+
+            rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
+            reducers = []
+            for ip in reducer_ips:
+                conn = rpyc.connect(ip[0], int(config['MAP_REDUCE']['PORT']), config=rpyc.core.protocol.DEFAULT_CONFIG)
+
+                reducers.append(conn.root)
+
+            return reducers
 
         except Exception as e:
             traceback.print_exc()
