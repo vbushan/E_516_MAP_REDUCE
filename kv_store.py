@@ -32,7 +32,9 @@ class KV_SERVER(rpyc.Service):
             raise Exception(str(e))
 
     def exposed_set(self,hash_key,data):
+        logging.info(f'Data in KV Store {self.data}')
         try:
+            logging.info(f'Worker trying to add data {(hash_key,data)}')
             with KV_SERVER.lock:
                 if hash_key in self.data:
                     self.data[hash_key]+=data
