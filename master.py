@@ -8,6 +8,8 @@ from worker_trigger import start_worker_instance
 import cmp_eng
 import logging
 import os
+import multiprocessing
+
 
 logging.basicConfig(level=logging.DEBUG,filename='app.log',filemode='w')
 
@@ -30,8 +32,10 @@ class Master(rpyc.Service):
         print('Client disconnected on',time)
 
     def exposed_init_cluster(self):
-        mappers=[]
-        reducers=[]
+        #mappers=[]
+        #reducers=[]
+
+        """
         with concurrent.futures.ProcessPoolExecutor() as executor:
             mapper_names = [config['MAPPER']['NAME'] +
                             str(i) for i in range(1, self.num_mappers+1)]
@@ -45,13 +49,28 @@ class Master(rpyc.Service):
             for name,IP in zip(reducer_names,executor.map(self.spawn_worker,reducer_names)):
                 reducers.append((name,IP))
         
+        """
+        try:
+            mapper_names = [config['MAPPER']['NAME'] +
+                            str(i) for i in range(1, self.num_mappers + 1)]
+            reducer_names = [config['REDUCER']['NAME'] +
+                         str(i) for i in range(1, self.num_reducers + 1)]
+
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                mapper_processes=[executor.submit(self.spawn_worker,mapper) for mapper in mapper_names]
+                reducer_processes=[executor.submit(self.spawn_worker,reducer) for reducer in reducer_names]
+                mappers=[process.result() for process in concurrent.futures.as_completed(mapper_processes)]
+                reducers=[process.result() for process in concurrent.futures.as_completed(reducer_processes)]
 
 
-        self.mappers=mappers
-        self.reducers=reducers
-    
-        return (self.mappers,self.reducers)
+            self.mappers=mappers
+            self.reducers=reducers
 
+            return (self.mappers,self.reducers)
+
+        except Exception as e:
+            logging.error(e)
+            raise Exception(e)
 
     def exposed_destroy_cluster(self):
         try:
@@ -59,8 +78,10 @@ class Master(rpyc.Service):
             reducer_names=[name for name,_ in self.reducers]
 
             with concurrent.futures.ProcessPoolExecutor() as executor:
-                executor.map(cmp_eng.delete_instance,mapper_names)
-                executor.map(cmp_eng.delete_instance,reducer_names)
+                for mapper in mapper_names:
+                    executor.submit(cmp_eng.delete_instance, mapper)
+                for reducer in reducer_names:
+                    executor.submit(cmp_eng.delete_instance, reducer)
 
             return 1
 

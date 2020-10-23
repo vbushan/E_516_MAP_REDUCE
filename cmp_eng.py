@@ -1,7 +1,7 @@
 import googleapiclient.discovery
 import configparser
 import time
-#import logging
+import logging
 
 #logging.basicConfig(level=logging.DEBUG,filename='worker-trigger.log',filemode='w')
 
@@ -74,15 +74,18 @@ def create_instance(name,startup_script):
 
     }
 
-    return compute.instances().insert(
-        project=project,
-        zone=zone,
-        body=config).execute()
+    operation= compute.instances().insert(project=project,zone=zone,body=config).execute()
+    result = wait_for_operation(operation['name'])
+    while True:
+        if result['status'] == 'DONE':
+            print('Created instance', name)
+            logging.info(f'Created instance {name}')
+            break
 
 def wait_for_operation(operation):
 
     print('Waiting for operation to finish...')
-
+    logging.info('Waiting for operation to finish...')
     while True:
         result = compute.zoneOperations().get(
             project=project,
@@ -91,6 +94,7 @@ def wait_for_operation(operation):
 
         if result['status'] == 'DONE':
             print("done.")
+            logging.info("done.")
             if 'error' in result:
                 raise Exception(result['error'])
             return result
@@ -108,6 +112,7 @@ def delete_instance(name):
     while True:
         if result['status'] == 'DONE':
             print('Deleted instance',name)
+            logging.info(f"Deleted Instance {name}")
             break
 
 def get_ip(name):

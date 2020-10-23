@@ -17,9 +17,12 @@ try:
     master_conn=rpyc.connect(MASTER_IP,PORT,config=rpyc.core.protocol.DEFAULT_CONFIG)
     master=master_conn.root
 
+    s_time=time.perf_counter()
     result1=master.init_cluster()
     print('Workers',result1)
-    
+    e_time=time.perf_counter()
+    print("Execution time",round(e_time-s_time,2))
+
     time.sleep(20)
 
     result2=master.run_map_reduce('./books/','map_word_count','red_word_count','./Output/')

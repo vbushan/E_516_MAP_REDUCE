@@ -24,8 +24,8 @@ try:
 
     master_create_op= cmp_eng.create_instance(
                                         MASTER_NAME, master_startup_script)
-    status = cmp_eng.wait_for_operation(master_create_op['name'])
-    pprint(status)
+    #status = cmp_eng.wait_for_operation(master_create_op['name'])
+    #pprint(status)
 
     print('[Checkpoint] Master Instance Created')
 
@@ -37,8 +37,8 @@ try:
     print('Creating KV Server instance....')
     kv_server_create_op= cmp_eng.create_instance(
                                         KV_SERVER_NAME, kv_server_startup_script)
-    status = cmp_eng.wait_for_operation(kv_server_create_op['name'])
-    pprint(status)
+    #status = cmp_eng.wait_for_operation(kv_server_create_op['name'])
+    #pprint(status)
 
     print('[Checkpoint] KV Server Instance Created')
 
