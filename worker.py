@@ -73,15 +73,23 @@ class Worker(rpyc.Service):
             logging.info('Connected to KV Store')
             
             def hash_func(item):
-
                 word=item[0]
                 return sum([ord(c) for c in word])%num_reducers
-            
+
             logging.info('Sending result to KV')
-            for hash_key,group in itertools.groupby(result,hash_func):
-                logging.info(f'{hash_key},{group}')
-                kv_server.set(hash_key,list(group))
-            
+
+            store = dict()
+
+            for item in result:
+                hash_key = hash_func(item)
+                if hash_key not in store:
+                    store[hash_key] = [item]
+                else:
+                    store[hash_key] += [item]
+
+            for key,value in store.items():
+                kv_server.set(key,value)
+
             logging.info('Completed Task')
             return "Completed Task"
         except Exception as e:
@@ -105,14 +113,23 @@ class Worker(rpyc.Service):
 
                 word=item[0]
                 return sum([ord(c) for c in word])%num_reducers
-            
+
             logging.info('Sending result to KV')
-            
-            for hash_key,group in itertools.groupby(result,hash_func):
-                logging.info(f'{hash_key},{group}')
-                kv_server.set(hash_key,list(group))
+
+            store = dict()
+
+            for item in result:
+                hash_key = hash_func(item)
+                if hash_key not in store:
+                    store[hash_key] = [item]
+                else:
+                    store[hash_key] += [item]
+
+            for key, value in store.items():
+                kv_server.set(key, value)
 
             return "Completed Task"
+
         except Exception as e:
             logging.error(e)
             raise Exception(str(e))

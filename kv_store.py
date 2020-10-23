@@ -34,7 +34,6 @@ class KV_SERVER(rpyc.Service):
     def exposed_set(self,hash_key,data):
         try:
             with KV_SERVER.lock:
-                logging.info(f'Storing data {hash_key,data}')
                 if hash_key in self.data:
                     self.data[hash_key]+=data
                 else:
