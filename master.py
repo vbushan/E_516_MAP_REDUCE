@@ -84,7 +84,7 @@ class Master(rpyc.Service):
             
             for i in range(len(map_in_files)):
                 for file_index,file in map_in_files[i]:
-                    mapper_input[i].append((file_index,open(file,'r',encoding='utf-8').read()))
+                    mapper_input[i].append((file_index,open(in_loc+file,'r',encoding='utf-8').read()))
 
             mapper_ips=[ip for _,ip in self.mappers ]
             reducer_ips=[ip for _,ip in self.reducers ]
