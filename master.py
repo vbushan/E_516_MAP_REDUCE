@@ -88,11 +88,14 @@ class Master(rpyc.Service):
                 index=i%self.num_mappers
                 map_in_files[index].append((i+1,book_names[i]))
 
+            logging.info(map_in_files)
             mapper_input=[[] for i in range(self.num_mappers)]
             
             for i in range(len(map_in_files)):
                 for file_index,file in map_in_files[i]:
                     mapper_input[i].append((file_index,open(in_loc+file,'r',encoding='utf-8').read()))
+
+            logging.info(f'Length of mapper input {len(mapper_input)}')
 
             mapper_ips=[ip for _,ip in self.mappers ]
             reducer_ips=[ip for _,ip in self.reducers ]

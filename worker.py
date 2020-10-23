@@ -88,6 +88,7 @@ class Worker(rpyc.Service):
                     store[hash_key] += [item]
 
             for key,value in store.items():
+                logging.info(f'Sending data {(key,value)}')
                 kv_server.set(key,value)
 
             logging.info('Completed Task')
