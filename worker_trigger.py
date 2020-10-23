@@ -5,7 +5,7 @@ import traceback
 import os
 import logging
 
-logging.basicConfig(level=logging.DEBUG,filename='worker-trigger.log',filemode='w')
+#logging.basicConfig(level=logging.DEBUG,filename='worker-trigger.log',filemode='w')
 
 
 config=configparser.ConfigParser()
