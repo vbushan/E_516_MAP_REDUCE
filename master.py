@@ -122,11 +122,6 @@ class Master(rpyc.Service):
 
             logging.info('Completed reducer tasks')
 
-
-
-
-
-
             return 1
         except Exception as e:
             traceback.print_exc()
