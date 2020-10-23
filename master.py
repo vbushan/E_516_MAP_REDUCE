@@ -74,9 +74,10 @@ class Master(rpyc.Service):
             reducer_ips=[ip for _,ip in self.reducers ]
 
             logging.info(f'Worker IPs- {(mapper_ips,reducer_ips)}')
-            
-            logging.info('Starting mapper tasks')
 
+            """
+            logging.info('Starting mapper tasks')
+            
             mapper_responses=[]
             for mapper in mapper_ips:
                 mapper_responses.append(self.run_mapper(mapper))
@@ -96,8 +97,35 @@ class Master(rpyc.Service):
             for response in reducer_responses:
                 if not response:
                     raise Exception("Reducer task incomplete")
+        
+            logging.info('Completed reducer tasks')
+            """
+            logging.info('Starting mapper tasks')
+
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                mapper_responses=executor.map(self.run_mapper,mapper_ips)
+
+            for response in mapper_responses:
+                if not response:
+                    raise Exception("Mapper task incomplete")
+
+            logging.info('Completed mapper tasks')
+
+            logging.info('Starting reducer tasks')
+
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                reducer_responses=executor.map(self.run_reducer,reducer_ips)
+
+            for response in reducer_responses:
+                if not response:
+                    raise Exception("Reducer task incomplete")
 
             logging.info('Completed reducer tasks')
+
+
+
+
+
 
             return 1
         except Exception as e:

@@ -21,7 +21,7 @@ try:
     result1=master.init_cluster()
     print('Workers',result1)
     
-    time.sleep(10)
+    time.sleep(20)
 
     result2=master.run_map_reduce()
     if not result2:

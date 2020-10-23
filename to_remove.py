@@ -79,6 +79,7 @@ print('Execution time',e_time-s_time)
 
 
 s_time=time.perf_counter()
+
 for ip in mapper_ips:
     if not mapper(ip):
         raise Exception('Incomplete Mapper task')
@@ -86,5 +87,6 @@ for ip in mapper_ips:
 for ip in reducer_ips:
     if not reducer(ip):
         raise Exception('Incomplete Reducer task')
+
 e_time=time.perf_counter()
 print('Execution time',e_time-s_time)
