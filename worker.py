@@ -92,7 +92,7 @@ class Worker(rpyc.Service):
                 kv_server.set(key,value)
 
             logging.info('Completed Task')
-            conn.close()
+
             return "Completed Task"
         except Exception as e:
             logging.error(e)

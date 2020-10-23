@@ -143,9 +143,24 @@ class Master(rpyc.Service):
             for process in red_add:
                 reducer_responses.append(process.value)
 
+            count=0
             for response in reducer_responses:
                 if response[0]!=1:
                     raise Exception("Reducer task incomplete")
+
+                if self.red_func=='red_inv_ind':
+                    with open(out_loc+f'Output- {count}','w+',encoding='utf-8') as file:
+                        for word,values in response[1]:
+                            file.write(word+ "       "+ ' '.join(map(str,values)))
+
+                            count+=1
+                else:
+                    with open(out_loc + f'Output- {count}', 'w+', encoding='utf-8') as file:
+                        for word,count in response[1]:
+                            file.write(word+"         "+str(count))
+
+                            
+
 
             logging.info('Completed reducer tasks')
 
