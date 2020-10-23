@@ -111,7 +111,7 @@ class Master(rpyc.Service):
 
             #map_add=[rpyc.async_(mapper.add)(2,3) for mapper in mappers]
 
-            map_add=[rpyc.async_(mappers[i].execute)('MAPPER',self.map_func,mapper_input[i],i+1) for i in range(len(mappers))]
+            map_add=[rpyc.async_(mappers[i].execute)('MAPPER',self.map_func,mapper_input[i],i) for i in range(len(mappers))]
 
             for process in map_add:
                 while not process.ready:
@@ -132,7 +132,7 @@ class Master(rpyc.Service):
 
             #red_add = [rpyc.async_(reducer.add)(2, 3) for reducer in reducers]
 
-            red_add=[rpyc.async_(reducers[i].execute)('REDUCER',self.red_func,None,i+1) for i in range(len(reducers))]
+            red_add=[rpyc.async_(reducers[i].execute)('REDUCER',self.red_func,None,i) for i in range(len(reducers))]
 
             for process in red_add:
                 while not process.ready:
