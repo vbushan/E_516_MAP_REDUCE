@@ -130,7 +130,6 @@ class Master(rpyc.Service):
             conn=rpyc.connect(mapper_ip[0],int(config['MAP_REDUCE']['PORT']),config=rpyc.core.protocol.DEFAULT_CONFIG)
             worker=conn.root
 
-            
             logging.debug(f'Mapper {mapper_ip} performing task 1')
             result = worker.add(2, 3)
 
@@ -139,6 +138,7 @@ class Master(rpyc.Service):
             if result!=5:
                 raise Exception('Incorrect Result')
 
+            """
             logging.info(f'Mapper {mapper_ip} performing task 2')
 
 
@@ -148,8 +148,10 @@ class Master(rpyc.Service):
 
             if result!=1:
                 raise Exception(f'Something went wrong in mapper- {mapper_ip}')
+            """
 
             conn.close()
+
             return 1
 
         except Exception as e:
@@ -174,15 +176,19 @@ class Master(rpyc.Service):
             if result != 5:
                 raise Exception('Incorrect Result')
 
-
+            """
+            logging.debug(f"Reducer {reducer_ip} performing task 2")
             status,result=worker.execute('REDUCER',self.red_func,None,reducer_index)
-
+            logging.debug(f"{reducer_ip} task 1 result- {status}")
+            
             if status==1:
                 with open(self.out_loc+f'-{reducer_index}.txt','w') as file:
                     file.write()
             
             else:
-                raise Exception('Something went wrong in the mapper')
+                raise Exception('Something went wrong in the reducer')
+            
+            """
             conn.close()
             return 1
 
