@@ -14,7 +14,7 @@ num_mappers=int(config['MASTER']['NUM_MAPPERS'])
 num_reducers=int(config['MASTER']['NUM_REDUCERS'])
 
 KV_SERVER_NAME=config['KV_SERVER']['NAME']
-KV_SERVER_IP=cmp_eng.get_ip(KV_SERVER_NAME)
+_,KV_SERVER_IP=cmp_eng.get_ip(KV_SERVER_NAME)
 KV_SERVER_PORT = int(config['MAP_REDUCE']['PORT'])
 
 logging.basicConfig(level=logging.DEBUG,filename='worker.log',filemode='w')
