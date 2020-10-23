@@ -24,6 +24,13 @@ def exposed_create_cluster(mappers,reducers):
             for reducer in reducer_names:
                 executor.submit(cmp_eng.create_instance, reducer,startup_script)
 
+        for mapper in mapper_names:
+            print('Mapper',cmp_eng.get_ip(mapper))
+
+        for reducer in reducer_names:
+            print('Reducer',cmp_eng.get_ip(reducer))
+
+
         return 1
 
     except Exception as e:
