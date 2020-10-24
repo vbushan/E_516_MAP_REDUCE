@@ -101,6 +101,9 @@ class KV_SERVER(rpyc.Service):
 
 if __name__ == "__main__":
     rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
+    rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
+    rpyc.core.protocol.DEFAULT_CONFIG['allow_all_attrs'] = True
+
     t = ThreadedServer(KV_SERVER,
                        hostname='0.0.0.0', port=8080, protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
     t.start()
