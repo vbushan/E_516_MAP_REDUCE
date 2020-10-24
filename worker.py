@@ -7,6 +7,8 @@ import itertools
 import cmp_eng
 from functools import reduce
 import re
+from google.cloud import storage
+
 
 config=configparser.ConfigParser()
 config.read('config.ini')
@@ -17,6 +19,7 @@ num_reducers=int(config['MASTER']['NUM_REDUCERS'])
 KV_SERVER_NAME=config['KV_SERVER']['NAME']
 _,KV_SERVER_IP=cmp_eng.get_ip(KV_SERVER_NAME)
 KV_SERVER_PORT = int(config['MAP_REDUCE']['PORT'])
+
 
 logging.basicConfig(level=logging.DEBUG,filename='worker.log',filemode='w')
 
@@ -172,6 +175,29 @@ class Worker(rpyc.Service):
                     else:
                         store[key]=value
 
+                logging.info('Completed task')
+                
+                logging.info('Writing Output to Cloud storage bucket')
+
+                result = list(store.items())
+
+                source_file = f'word_count{index}.txt'
+
+                destination_file = f'word_count_map_red_{index}.txt'
+
+                with open(source_file, 'a+') as file:
+                    for key, value in result:
+                        file.write(key + "       " + str(value) + '\n')
+
+                storage_client = storage.Client()
+                bucket_name = config['MAP_REDUCE']['OUTPUT_LOCATION']
+                bucket = storage_client.bucket(bucket_name)
+
+                blob = bucket.blob(destination_file)
+                blob.upload_from_filename(source_file)
+
+                logging.info("File {} uploaded to {}.".format(source_file, destination_file))
+
                 return list(store.items())
 
         except Exception as e:
@@ -199,6 +225,28 @@ class Worker(rpyc.Service):
                     store[key] = [value]
             
             logging.info('Completed task')
+
+            logging.info('Writing Output to Cloud storage bucket')
+
+            result=list(store.items())
+
+            source_file=f'inv_ind_{index}.txt'
+
+            destination_file=f'inverted_index_map_red_{index}.txt'
+
+            with open(source_file, 'a+') as file:
+                for key, value in result:
+                    file.write(key + "       " + str(value) + '\n')
+
+            storage_client = storage.Client()
+            bucket_name=config['MAP_REDUCE']['OUTPUT_LOCATION']
+            bucket = storage_client.bucket(bucket_name)
+
+            blob = bucket.blob(destination_file)
+            blob.upload_from_filename(source_file)
+
+            logging.info("File {} uploaded to {}.".format(source_file, destination_file))
+
             return list(store.items())
         
         except Exception as e:
