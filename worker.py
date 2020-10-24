@@ -3,9 +3,7 @@ from rpyc.utils.server import ThreadedServer
 import datetime
 import logging
 import configparser
-import itertools
 import cmp_eng
-from functools import reduce
 import re
 from google.cloud import storage
 
@@ -42,18 +40,18 @@ class Worker(rpyc.Service):
         try:
             if role=="MAPPER":
 
-                if func=='map_word_count':
+                if func==config['MAPPER']['WORD_COUNT_MAP_FUNC']:
                     result=self.map_wc(data)
 
-                elif func=='map_inv_ind':
+                elif func==config['MAPPER']['INVERTED_INDEX_MAP_FUNC']:
                     result=self.map_inv_ind(data)
 
             elif role=="REDUCER":
 
-                if func=='red_word_count':
+                if func==config['REDUCER']['WORD_COUNT_REDUCER_FUNC']:
                     result=self.red_wc(index)
 
-                elif func=='red_inv_ind':
+                elif func==config['REDUCER']['INVERTED_INDEX_REDUCER_FUNC']:
                     result=self.red_inv_ind(index)
 
             return 1,result
@@ -66,6 +64,7 @@ class Worker(rpyc.Service):
 
         result=[]
         try:
+            logging.info('Starting Map task')
             for _,file in data:
                 words=file.split(" ")
 
@@ -75,7 +74,8 @@ class Worker(rpyc.Service):
 
 
             logging.info(f'Mapper Result {result}')
-
+            
+            logging.info(f'Connecting to KV Store...')
             rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
@@ -113,6 +113,7 @@ class Worker(rpyc.Service):
     def map_inv_ind(self,data):
         result=[]
         try:
+            logging.info('Starting Map task')
             for index,file in data:
                 words=file.split()
                 for word in words:
@@ -120,12 +121,14 @@ class Worker(rpyc.Service):
                         result+=[(word,index)]
             
             logging.info(f'Mapper result {result}')
-            
+
+            logging.info(f'Connecting to KV Store...')
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
             logging.info('Connected to KV Store')
+
             def hash_func(item):
 
                 word=item[0]
@@ -134,8 +137,7 @@ class Worker(rpyc.Service):
             logging.info('Sending result to KV')
 
             store = dict()
-            
-            
+
             for item in result:
                 hash_key = hash_func(item)
                 if hash_key not in store:
@@ -236,7 +238,7 @@ class Worker(rpyc.Service):
 
             with open(source_file, 'a+') as file:
                 for key, value in result:
-                    file.write(key + "       " + str(value) + '\n')
+                    file.write(key + "       " + str(sorted(value)) + '\n')
 
             storage_client = storage.Client()
             bucket_name=config['MAP_REDUCE']['OUTPUT_LOCATION']
@@ -258,5 +260,7 @@ class Worker(rpyc.Service):
 
 if __name__ == "__main__":
     rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
-    t = ThreadedServer(Worker, hostname='0.0.0.0', port=8080,protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
+    t = ThreadedServer(Worker,
+                       hostname=config['MAP_REDUCE']['IP'], port=int(config['MAP_REDUCE']['PORT']),
+                       protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
     t.start()

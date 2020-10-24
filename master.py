@@ -1,6 +1,7 @@
 import rpyc
 from rpyc.utils.server import ThreadedServer
 import datetime
+import time
 import configparser
 import concurrent.futures
 import traceback
@@ -15,6 +16,7 @@ logging.basicConfig(level=logging.DEBUG,filename='app.log',filemode='w')
 config=configparser.ConfigParser()
 config.read('config.ini')
 
+
 class Master(rpyc.Service):
     def __init__(self):
         super().__init__()
@@ -23,17 +25,21 @@ class Master(rpyc.Service):
         self.num_reducers=int(config['MASTER']['NUM_REDUCERS'])
 
     def on_connect(self, conn):
-        time=datetime.datetime.now()
-        logging.info(f'Client connected on {time}')
+        c_time=datetime.datetime.now()
+        logging.info(f'Client connected on {c_time}')
 
     def on_disconnect(self, conn):
-        time=datetime.datetime.now()
-        logging.info(f'Client disconnected on {time}')
+        d_time=datetime.datetime.now()
+        logging.info(f'Client disconnected on {d_time}')
 
-    def exposed_init_cluster(self):
+    def exposed_init_cluster(self,t):
         try:
             mappers=[]
             reducers=[]
+
+            # Create Workers in parallel.
+            # Note: Parallel processing is limited by the number of cores in the Master Node instance
+
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 mapper_names = [config['MAPPER']['NAME'] +
                                 str(i) for i in range(1, self.num_mappers + 1)]
@@ -47,6 +53,8 @@ class Master(rpyc.Service):
                 for name, IP in zip(reducer_names, executor.map(self.spawn_worker, reducer_names)):
                     reducers.append((name, IP))
 
+            # Wait till the workers are ready to connect.
+            time.sleep(t)
             self.mappers=mappers
             self.reducers=reducers
 
@@ -58,6 +66,7 @@ class Master(rpyc.Service):
 
     def exposed_destroy_cluster(self):
         try:
+            # Destroy Worker Instance in parallel
             mapper_names=[name for name,_ in self.mappers]
             reducer_names=[name for name,_ in self.reducers]
 
@@ -81,6 +90,7 @@ class Master(rpyc.Service):
             self.red_func=red_func
             self.out_loc=out_loc
 
+            # Step 1: Read the input and divide the data into chunks.
             book_names=list(os.listdir(in_loc))
             map_in_files=[[] for i in range(self.num_mappers)]
             for i in range(len(book_names)):
@@ -96,6 +106,7 @@ class Master(rpyc.Service):
 
             logging.info(f'Length of mapper input {len(mapper_input)}')
 
+            # Step 2: Connect to workers and divide the map task among workers
             mapper_ips=[ip for _,ip in self.mappers ]
             reducer_ips=[ip for _,ip in self.reducers ]
 
@@ -106,10 +117,7 @@ class Master(rpyc.Service):
 
             logging.info('Starting mapper tasks')
 
-
-
-            #map_add=[rpyc.async_(mapper.add)(2,3) for mapper in mappers]
-
+            # Step 3: Run Map tasks asynchronously to achieve parallel processing.
             map_add=[rpyc.async_(mappers[i].execute)('MAPPER',self.map_func,mapper_input[i],i) for i in range(len(mappers))]
 
             for process in map_add:
@@ -128,9 +136,7 @@ class Master(rpyc.Service):
 
             logging.info('Starting reducer tasks')
 
-
-            #red_add = [rpyc.async_(reducer.add)(2, 3) for reducer in reducers]
-
+            # Step 4: Run reduce task asynchronously
             red_add=[rpyc.async_(reducers[i].execute)('REDUCER',self.red_func,None,i) for i in range(len(reducers))]
 
             for process in red_add:
@@ -142,28 +148,11 @@ class Master(rpyc.Service):
             for process in red_add:
                 reducer_responses.append(process.value)
 
-            count=0
+
             for response in reducer_responses:
                 if response[0]!=1:
                     raise Exception("Reducer task incomplete")
 
-                if self.red_func=='red_inv_ind':
-                    with open(f'Output-{count}.txt','w',encoding='utf-8') as file:
-                        text=''
-                        for word,values in response[1]:
-                            text+=word+ "       "+ ' '.join(map(str,values))+'\n'
-
-                        file.write(text)
-
-                else:
-                    with open(f'Output-{count}.txt', 'w', encoding='utf-8') as file:
-                        text=""
-                        for word,count in response[1]:
-                            text+=word+"         "+str(count)+'\n'
-
-                        file.write(text)
-
-                count+=1
 
 
             logging.info('Completed reducer tasks')
@@ -217,5 +206,6 @@ class Master(rpyc.Service):
 if __name__=="__main__":
     rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
     t=ThreadedServer(Master,
-    hostname='0.0.0.0',port=8080,protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
+                     hostname=config['MAP_REDUCE']['IP'], port=int(config['MAP_REDUCE']['PORT']),
+                     protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
     t.start()

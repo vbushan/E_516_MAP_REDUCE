@@ -1,3 +1,4 @@
 map_reduce_env/
 delete_instances.py
+create_instances.py
 worker_funcs.py

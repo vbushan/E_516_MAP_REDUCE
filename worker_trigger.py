@@ -1,7 +1,5 @@
 import configparser
 import cmp_eng
-from pprint import pprint
-import traceback
 import os
 import logging
 
@@ -30,6 +28,5 @@ def start_worker_instance(name):
         return int_ip,ext_ip
 
     except Exception as e:
-        #traceback.print_exc()
-        logging.error(str(e))
+        logging.error(str(e),exc_info=True)
         raise Exception(str(e))
