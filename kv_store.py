@@ -7,6 +7,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG,filename='app.log',filemode='w')
 
 
+
+
 class KV_SERVER(rpyc.Service):
 
     def __init__(self):
@@ -53,6 +55,6 @@ class KV_SERVER(rpyc.Service):
 
 if __name__ == "__main__":
     rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
-    t = ThreadedServer(KV_SERVER(),
+    t = ThreadedServer(KV_SERVER,
                        hostname='0.0.0.0', port=8080,protocol_config=rpyc.core.protocol.DEFAULT_CONFIG)
     t.start()
