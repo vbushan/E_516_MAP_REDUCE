@@ -122,7 +122,7 @@ class Worker(rpyc.Service):
             rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
-
+            logging.info('Connected to KV Store')
             def hash_func(item):
 
                 word=item[0]
@@ -131,7 +131,8 @@ class Worker(rpyc.Service):
             logging.info('Sending result to KV')
 
             store = dict()
-
+            
+            
             for item in result:
                 hash_key = hash_func(item)
                 if hash_key not in store:
@@ -141,7 +142,8 @@ class Worker(rpyc.Service):
 
             for key, value in store.items():
                 kv_server.set(key, value)
-
+            
+            logging.info('Completed task')
             return "Completed Task"
 
         except Exception as e:
@@ -155,9 +157,9 @@ class Worker(rpyc.Service):
             rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
-            logging.info('Connected to KV')
+            logging.info('Connected to KV Store')
             
-            logging.info('Getting data from KV')
+            logging.info('Getting data from KV Store')
             data=kv_server.get(index)
 
             if data:
@@ -178,21 +180,25 @@ class Worker(rpyc.Service):
 
     def red_inv_ind(self,index):
         try:
+            logging.info('In inverted index reducer function')
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
-
+            logging.info('Connected to KV Store')
             data = kv_server.get(index)
-
+            
+            logging.info('Received data from KV Store')
             store = dict()
 
             for key, value in data:
-                if key in store and value not in store[key]:
-                    store[key].append(value)
+                if key in store:
+                    if value not in store[key]:
+                        store[key].append(value)
                 else:
                     store[key] = [value]
-
+            
+            logging.info('Completed task')
             return list(store.items())
         
         except Exception as e:
