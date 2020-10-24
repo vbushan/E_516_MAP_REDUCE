@@ -1,4 +1,4 @@
-# E_516_MAP_REDUCE
+# E 516: Distributed Map Reduce
 
 1.  I have used the Google Client APIs in python to interface with Compute Engine and Google Cloud Storage.
     The APIs can be installed using the following commands:
