@@ -62,6 +62,7 @@ class KV_SERVER(rpyc.Service):
             if index in self.data:
                 print(f'Sending data to client')
                 logging.info(f'Sending data to client')
+                logging.info(f'Type of returned data- {type(self.data[index])}')
                 return self.data[index]
 
         except Exception as e:
