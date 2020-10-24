@@ -149,13 +149,13 @@ class Master(rpyc.Service):
                     raise Exception("Reducer task incomplete")
 
                 if self.red_func=='red_inv_ind':
-                    with open(out_loc+f'Output- {count}','w+',encoding='utf-8') as file:
+                    with open(out_loc+f'Output-{count}.txt','w+',encoding='utf-8') as file:
                         for word,values in response[1]:
                             file.write(word+ "       "+ ' '.join(map(str,values)))
 
                             count+=1
                 else:
-                    with open(out_loc + f'Output- {count}', 'w', encoding='utf-8') as file:
+                    with open(out_loc + f'Output-{count}.txt', 'w+', encoding='utf-8') as file:
                         for word,count in response[1]:
                             file.write(word+"         "+str(count))
 

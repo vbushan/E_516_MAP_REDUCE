@@ -66,7 +66,8 @@ class Worker(rpyc.Service):
                 words=file.split(" ")
                 result+=list(map(lambda x: (x, 1), words))
             logging.info(f'Mapper Result {result}')
-            
+
+            rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
@@ -108,6 +109,7 @@ class Worker(rpyc.Service):
             logging.info(f'Mapper result {result}')
             
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
+            rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
 
@@ -140,6 +142,7 @@ class Worker(rpyc.Service):
         try:
             logging.info('In word count reducer function')
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
+            rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
             logging.info('Connected to KV')
@@ -162,6 +165,7 @@ class Worker(rpyc.Service):
     def red_inv_ind(self,index):
         try:
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
+            rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
 
