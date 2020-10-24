@@ -24,8 +24,12 @@ class KV_SERVER(rpyc.Service):
         logging.info(f'Worker disconnected on {time}')
 
     def exposed_get(self,index):
+
         try:
-            return self.data[index]
+            if index in self.data:
+                logging.info(f'Sending data to client {self.data[index]}')
+                return self.data[index]
+
         except Exception as e:
             logging.error(e)
             raise Exception(str(e))

@@ -138,17 +138,23 @@ class Worker(rpyc.Service):
 
     def red_wc(self,index):
         try:
+            logging.info('In word count reducer function')
             rpyc.core.protocol.DEFAULT_CONFIG['sync_request_timeout'] = None
             conn = rpyc.connect(KV_SERVER_IP, KV_SERVER_PORT, config=rpyc.core.protocol.DEFAULT_CONFIG)
             kv_server = conn.root
-
+            logging.info('Connected to KV')
+            
+            logging.info('Getting data from KV')
             data=kv_server.get(index)
 
-            result=[]
-            for word,group in itertools.groupby(data,lambda x:x[0]):
-                result.append((word,reduce(lambda x,y:x[1]+y[1],list(group))))
+            if data:
+                logging.info(f'Data Received from KV {data}')
+            
+                result=[]
+                for word,group in itertools.groupby(data,lambda x:x[0]):
+                    result.append((word,reduce(lambda x,y:x[1]+y[1],list(group))))
 
-            return result
+                return result
         except Exception as e:
             logging.error(e)
             raise Exception(e)
