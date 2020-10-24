@@ -26,6 +26,7 @@ class KV_SERVER(rpyc.Service):
     def exposed_get(self,index):
 
         try:
+
             if index in self.data:
                 logging.info(f'Sending data to client {self.data[index]}')
                 return self.data[index]
