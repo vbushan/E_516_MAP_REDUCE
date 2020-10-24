@@ -6,6 +6,7 @@ import configparser
 import itertools
 import cmp_eng
 from functools import reduce
+import re
 
 config=configparser.ConfigParser()
 config.read('config.ini')
@@ -64,7 +65,12 @@ class Worker(rpyc.Service):
         try:
             for _,file in data:
                 words=file.split(" ")
-                result+=list(map(lambda x: (x, 1), words))
+
+                for word in words:
+                    if re.fullmatch(r'[a-zA-Z]+', word):
+                        result+=[(word,1)]
+
+
             logging.info(f'Mapper Result {result}')
 
             rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
@@ -106,7 +112,9 @@ class Worker(rpyc.Service):
         try:
             for index,file in data:
                 words=file.split()
-                result+=list(map(lambda x: (x, index), words))
+                for word in words:
+                    if re.fullmatch(r'[a-zA-Z]+', word):
+                        result+=[(word,index)]
             
             logging.info(f'Mapper result {result}')
             
@@ -162,7 +170,6 @@ class Worker(rpyc.Service):
                     else:
                         store[key]=value
 
-
                 return list(store.items())
 
         except Exception as e:
@@ -178,15 +185,15 @@ class Worker(rpyc.Service):
 
             data = kv_server.get(index)
 
-            result = []
-            for word, group in itertools.groupby(data, lambda x: x[0]):
-                temp_set=set()
-                for _,file_index in list(group):
-                    temp_set.add(file_index)
+            store = dict()
 
-                result.append((word,list(temp_set)))
+            for key, value in data:
+                if key in store and value not in store[key]:
+                    store[key].append(value)
+                else:
+                    store[key] = [value]
 
-            return result
+            return list(store.items())
         
         except Exception as e:
             logging.error(e,exc_info=True)

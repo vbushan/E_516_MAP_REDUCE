@@ -26,7 +26,7 @@ try:
     time.sleep(20)
 
 
-    result2=master.run_map_reduce('./books/','map_word_count','red_word_count','./Output/')
+    result2=master.run_map_reduce('./books/','map_inv_ind','red_inv_ind','./Output/')
     if not result2:
         raise Exception('Map reduce task incomplete')
 
