@@ -55,7 +55,7 @@ class Worker(rpyc.Service):
             return 1,result
 
         except Exception as e:
-            logging.error(e)
+            logging.error(e,exc_info=True)
             raise Exception(str(e))
 
     def map_wc(self,data):
@@ -96,7 +96,7 @@ class Worker(rpyc.Service):
 
             return "Completed Task"
         except Exception as e:
-            logging.error(e)
+            logging.error(e,exc_info=True)
             raise Exception(str(e))
 
     def map_inv_ind(self,data):
@@ -135,7 +135,7 @@ class Worker(rpyc.Service):
             return "Completed Task"
 
         except Exception as e:
-            logging.error(e)
+            logging.error(e,exc_info=True)
             raise Exception(str(e))
 
     def red_wc(self,index):
@@ -159,7 +159,7 @@ class Worker(rpyc.Service):
 
                 return result
         except Exception as e:
-            logging.error(e)
+            logging.error(e,exc_info=True)
             raise Exception(e)
 
     def red_inv_ind(self,index):
@@ -182,7 +182,7 @@ class Worker(rpyc.Service):
             return result
         
         except Exception as e:
-            logging.error(e)
+            logging.error(e,exc_info=True)
             raise Exception(e)
 
     def exposed_add(self,a,b):

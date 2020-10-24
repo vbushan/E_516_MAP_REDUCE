@@ -54,7 +54,7 @@ class Master(rpyc.Service):
             return (self.mappers,self.reducers)
 
         except Exception as e:
-            logging.error(str(e))
+            logging.error(str(e),exc_info=True)
             raise Exception(e)
 
     def exposed_destroy_cluster(self):
@@ -72,7 +72,7 @@ class Master(rpyc.Service):
 
         except Exception as e:
             
-            logging.error(str(e))
+            logging.error(str(e),exc_info=True)
             raise Exception(e)
             return 0
 
@@ -167,7 +167,7 @@ class Master(rpyc.Service):
             return 1
         except Exception as e:
             traceback.print_exc()
-            logging.error('Error in map reduce task- \n'+str(e))
+            logging.error('Error in map reduce task- \n'+str(e),exc_info=True)
             return 0
 
     def run_mapper(self,mapper_ips):
@@ -183,7 +183,7 @@ class Master(rpyc.Service):
 
         except Exception as e:
             traceback.print_exc()
-            logging.error('Error in map task- \n' + str(e))
+            logging.error('Error in map task- \n' + str(e),exc_info=True)
             raise Exception(str(e))
 
     def run_reducer(self,reducer_ips):
@@ -199,7 +199,7 @@ class Master(rpyc.Service):
 
         except Exception as e:
             traceback.print_exc()
-            logging.error('Error in reduce task- \n' + str(e))
+            logging.error('Error in reduce task- \n' + str(e),exc_info=True)
             raise Exception(str(e))
 
     def spawn_worker(self,worker_name):

@@ -1,7 +1,7 @@
 import rpyc
 from rpyc.utils.server import ThreadedServer
 import datetime
-
+import os
 import threading
 import traceback
 import pickle
@@ -31,7 +31,8 @@ class KV_SERVER(rpyc.Service):
     def read_data(self):
         try:
 
-            self.data = pickle.load(open('kv_data.txt', 'rb'))
+            if os.path.getsize('kv_data.txt') > 0:
+                self.data = pickle.load(open('kv_data.txt', 'rb'))
 
         except Exception as e:
             print(e)
