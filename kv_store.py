@@ -43,10 +43,10 @@ class KV_SERVER(rpyc.Service):
         try:
             logging.info(f'Worker trying to add data {hash_key,data}')
 
-            if hash_key in self.data:
-                self.data[hash_key]+=data
+            if str(hash_key) in self.data:
+                self.data[str(hash_key)]+=data
             else:
-                self.data[hash_key]=data
+                self.data[str(hash_key)]=data
 
         except Exception as e:
             logging.error(str(e))
