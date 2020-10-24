@@ -8,7 +8,6 @@ logging.basicConfig(level=logging.DEBUG,filename='app.log',filemode='w')
 
 
 class KV_SERVER(rpyc.Service):
-    lock = threading.Lock()
 
     def __init__(self):
         super().__init__()
@@ -23,10 +22,8 @@ class KV_SERVER(rpyc.Service):
         logging.info(f'Worker disconnected on {time}')
 
     def exposed_get(self,index):
-
         try:
             return self.data[index]
-
         except Exception as e:
             logging.error(e)
             raise Exception(str(e))
@@ -34,12 +31,12 @@ class KV_SERVER(rpyc.Service):
     def exposed_set(self,hash_key,data):
         logging.info(f'Data in KV Store {self.data}')
         try:
-            logging.info(f'Worker trying to add data {(hash_key,data)}')
-            with KV_SERVER.lock:
-                if hash_key in self.data:
-                    self.data[hash_key]+=data
-                else:
-                    self.data[hash_key]=data
+            logging.info(f'Worker trying to add data {hash_key,data}')
+
+            if hash_key in self.data:
+                self.data[hash_key]+=data
+            else:
+                self.data[hash_key]=data
 
         except Exception as e:
             logging.error(str(e))
@@ -47,8 +44,8 @@ class KV_SERVER(rpyc.Service):
 
     def exposed_clear_data(self):
         try:
-            with KV_SERVER.lock:
-                self.data=dict()
+
+            self.data=dict()
 
         except Exception as e:
             logging.error(str(e))
