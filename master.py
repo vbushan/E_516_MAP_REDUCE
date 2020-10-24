@@ -155,7 +155,7 @@ class Master(rpyc.Service):
 
                             count+=1
                 else:
-                    with open(out_loc + f'Output- {count}', 'w+', encoding='utf-8') as file:
+                    with open(out_loc + f'Output- {count}', 'w', encoding='utf-8') as file:
                         for word,count in response[1]:
                             file.write(word+"         "+str(count))
 

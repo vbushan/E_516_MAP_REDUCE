@@ -3,7 +3,8 @@ from rpyc.utils.server import ThreadedServer
 import datetime
 import threading
 import logging
-
+import os
+import json
 logging.basicConfig(level=logging.DEBUG,filename='app.log',filemode='w')
 
 
@@ -18,10 +19,12 @@ class KV_SERVER(rpyc.Service):
     def on_connect(self, conn):
         time = datetime.datetime.now()
         logging.info(f'Worker connected on {time}')
+        self.read_data()
 
     def on_disconnect(self, conn):
         time = datetime.datetime.now()
         logging.info(f'Worker disconnected on {time}')
+        self.write_data()
 
     def exposed_get(self,index):
 
@@ -49,13 +52,24 @@ class KV_SERVER(rpyc.Service):
             logging.error(str(e))
             raise Exception(e)
 
-    def exposed_clear_data(self):
+    def write_data(self):
         try:
 
-            self.data=dict()
+            with open('./kv_data.json','w', encoding="utf-8") as file:
+                json.dump(self.data,file)
 
         except Exception as e:
             logging.error(str(e))
+
+    def read_data(self):
+        try:
+            if 'kv_data.json' in os.listdir('./'):
+                with open('./kv_data.json', 'r', encoding="utf-8") as file:
+                    self.data = json.load(file)
+
+        except Exception as e:
+            logging.error(str(e))
+            raise Exception(str(e))
 
 
 if __name__ == "__main__":
