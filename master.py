@@ -8,7 +8,6 @@ from worker_trigger import start_worker_instance
 import cmp_eng
 import logging
 import os
-import multiprocessing
 
 
 logging.basicConfig(level=logging.DEBUG,filename='app.log',filemode='w')
@@ -149,17 +148,22 @@ class Master(rpyc.Service):
                     raise Exception("Reducer task incomplete")
 
                 if self.red_func=='red_inv_ind':
-                    with open(out_loc+f'Output-{count}.txt','w+',encoding='utf-8') as file:
+                    with open(f'Output-{count}.txt','w',encoding='utf-8') as file:
+                        text=''
                         for word,values in response[1]:
-                            file.write(word+ "       "+ ' '.join(map(str,values)))
+                            text+=word+ "       "+ ' '.join(map(str,values))+'\n'
 
-                            count+=1
+                        file.write(text)
+
                 else:
-                    with open(out_loc + f'Output-{count}.txt', 'w+', encoding='utf-8') as file:
+                    with open(f'Output-{count}.txt', 'w', encoding='utf-8') as file:
+                        text=""
                         for word,count in response[1]:
-                            file.write(word+"         "+str(count))
+                            text+=word+"         "+str(count)+'\n'
 
-                            
+                        file.write(text)
+
+                count+=1
 
 
             logging.info('Completed reducer tasks')
