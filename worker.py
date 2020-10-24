@@ -155,11 +155,16 @@ class Worker(rpyc.Service):
             if data:
                 logging.info(f'Data Received from KV {data}')
             
-                result=[]
-                for word,group in itertools.groupby(data,lambda x:x[0]):
-                    result.append((word,reduce(lambda x,y:x[1]+y[1],list(group))))
+                store=dict()
+                for key,value in data:
+                    if key in store:
+                        store[key]+=value
+                    else:
+                        store[key]=value
 
-                return result
+
+                return list(store.items())
+
         except Exception as e:
             logging.error(e,exc_info=True)
             raise Exception(e)
