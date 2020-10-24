@@ -25,6 +25,7 @@ class KV_SERVER(rpyc.Service):
 
         self.read_data()
 
+        print(f'Worker read previous data.')
         #print(f'Data in store {self.data}')
         #logging.info(f'Data in store {self.data}')
 
@@ -69,10 +70,10 @@ class KV_SERVER(rpyc.Service):
             raise Exception(str(e))
 
     def exposed_set(self, hash_key, data):
-        print(f'Data in KV Store {self.data}')
+        #print(f'Data in KV Store {self.data}')
         try:
-            print(f'Worker trying to add data {hash_key,data}')
-            logging.info(f'Worker trying to add data {hash_key,data}')
+            #print(f'Worker trying to add data {hash_key,data}')
+            logging.info(f'Worker trying to add data')
 
             if hash_key in self.data:
                 self.data[hash_key] += data
