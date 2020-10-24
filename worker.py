@@ -87,6 +87,8 @@ class Worker(rpyc.Service):
                     store[hash_key] = [item]
                 else:
                     store[hash_key] += [item]
+            
+            logging.info(f'Keys- {list(store.items())}')
 
             for key,value in store.items():
                 logging.info(f'Sending data {(key,value)}')
