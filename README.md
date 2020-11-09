@@ -3,13 +3,13 @@
 1.  I have used the Google Client APIs in python to interface with Compute Engine and Google Cloud Storage.
     The APIs can be installed using the following commands:
 
-        - pip install --upgrade google-cloud-storage
-        - pip install --upgrade google-api-python-client
+         pip install --upgrade google-cloud-storage
+         pip install --upgrade google-api-python-client
 
 2.  All the instance connections is achieved through an rpc-based infrastructure. I have used the RPyC framework in python to achieve this.
     Make sure you install RPyC library via the following command before running the scripts-
 
-        * pip install rpyc
+         pip install rpyc
 
 3.  The Master and KV Severs are long-running servers which listen to TCP connections. So, to run the servers, execute the make_file.py file.
 
